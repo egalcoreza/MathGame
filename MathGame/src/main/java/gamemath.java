@@ -290,7 +290,7 @@ public class MathGame extends JFrame {
                     throw new IllegalArgumentException("Invalid operation");
             }
 
-            ques.setText("Question " + currentQuestion+1 + ":");
+            ques.setText("Question " + (currentQuestion + 1) + ":");
             
             questionLabel.setText(num1 + " " + operator + " " + num2 + " = ?");
             questionLabel.putClientProperty("answer", expectedAnswer);
