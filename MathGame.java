@@ -418,6 +418,7 @@ public class MathGame extends JFrame {
                 default:
                     throw new IllegalArgumentException("Invalid operation");
             }}
+
             ques.setText("Question " + (currentQuestion + 1) + ":");
             
             questionLabel.setText(num1 + " " + operator + " " + num2 + " = ?");
