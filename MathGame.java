@@ -61,6 +61,52 @@ public class MathGame extends JFrame {
         createGamePanel();
 
         setContentPane(difficultyPanel);
+        
+        // Create menu bar
+        JMenuBar menuBar = new JMenuBar();
+
+        // Create "Game" menu
+        JMenu gameMenu = new JMenu("Game");
+
+        // Create "About" menu
+        JMenu aboutMenu = new JMenu("About");
+
+        // Add menu items to "Game" menu
+        JMenuItem startMenuItem = new JMenuItem("Back to Menu");
+        startMenuItem.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                setContentPane(difficultyPanel);
+                revalidate();
+                repaint();
+            }
+        });
+        gameMenu.add(startMenuItem);
+
+        // Add menu items to "About" menu
+        JMenuItem versionMenuItem = new JMenuItem("Version");
+        versionMenuItem.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                JOptionPane.showMessageDialog(MathGame.this, "Version 1.0", "Version Information", JOptionPane.INFORMATION_MESSAGE);
+            }
+        });
+        aboutMenu.add(versionMenuItem);
+        
+        JMenuItem authorsMenuItem = new JMenuItem("Authors");
+        authorsMenuItem.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                JOptionPane.showMessageDialog(MathGame.this, "Authors: \nElmer Acloreza\nJen Zaca\nGabriel Lim\nJohn Pua", "Authors Information", JOptionPane.INFORMATION_MESSAGE);
+            }
+        });
+        aboutMenu.add(authorsMenuItem);
+
+        // Add menus to menu bar
+        menuBar.add(gameMenu);
+        menuBar.add(aboutMenu);
+
+        setJMenuBar(menuBar);
 
         setVisible(true);
     }
