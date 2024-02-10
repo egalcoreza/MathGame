@@ -399,26 +399,25 @@ public class MathGame extends JFrame {
                     operator = "*";
                     break;
                     
-                case RNDM:
-        Operation randomOperation = generateRandomOperation();
-        switch (randomOperation) {
-            case ADDITION:
-                expectedAnswer = num1 + num2;
-                operator = "+";
-                break;
-            case SUBTRACTION:
-                expectedAnswer = num1 - num2;
-                operator = "-";
-                break;
-            case MLTIPLICATION:
-                num2 = (num2 == 0) ? 1 : num2;
-                expectedAnswer = num1 * num2;
-                operator = "*";
-                break;
+               case RNDM:
+    int randomOperation = random.nextInt(3);
+    switch (randomOperation) {
+        case 0:
+            expectedAnswer = num1 + num2;
+            operator = "+";
+            break;
+        case 1:
+            expectedAnswer = num1 - num2;
+            operator = "-";
+            break;
+        case 2:
+            num2 = (num2 == 0) ? 1 : num2;
+            expectedAnswer = num1 * num2;
+            operator = "*";
+            break;
                 default:
                     throw new IllegalArgumentException("Invalid operation");
             }}
-
             ques.setText("Question " + (currentQuestion + 1) + ":");
             
             questionLabel.setText(num1 + " " + operator + " " + num2 + " = ?");
