@@ -2,17 +2,37 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.util.Random;
+import java.util.TimerTask;
+import java.util.Timer;
+import javax.swing.border.EmptyBorder;
 
 public class MathGame extends JFrame {
 
     private JPanel difficultyPanel;
     private JPanel gamePanel;
-
+    private JPanel gamePanel_1;
+    private JPanel gamePanel_2;
+    private JPanel gamePanel_3;
+    
+    private Timer t;
+    private TimerTask tt;
+    private JLabel gameTimer;
+    private int num;
+    private MouseTest mt;
+    private int expectedAnswer;
+    
     private JLabel ques;
     private JLabel questionLabel;
     private JTextField answerField;
     private JButton submitButton;
+    private String operator;
+    private int num1;
+    private int num2;
+    private int rnum1;
+    private int rnum2;
 
     private int currentQuestion;
     private int correctAnswers;
@@ -99,29 +119,36 @@ public class MathGame extends JFrame {
 
     private void createGamePanel() {
         gamePanel = new JPanel();
-        gamePanel.setLayout(null);
+        gamePanel.setLayout(new BoxLayout(gamePanel, BoxLayout.Y_AXIS));
+        gamePanel.setBorder(new EmptyBorder(10,20,10,20)); // ADDED BORDER/PADDING
+        
+        gamePanel_1 = new JPanel(); 
+        gamePanel_1.setLayout(new BoxLayout(gamePanel_1, BoxLayout.Y_AXIS));
+        gamePanel_2 = new JPanel(); 
+        gamePanel_2.setLayout(new GridLayout(2,1));
+        
+        gamePanel_3 = new JPanel(); gamePanel_3.setBackground(Color.yellow);
+        
+        
+        gameTimer = new JLabel("", SwingConstants.RIGHT);
+        gameTimer.setFont(buttonFont);
 
         ques = new JLabel("");
-        ques.setBounds(40,40,300,30);
         ques.setFont(new Font("Impact",Font.PLAIN,23));
         
-        questionLabel = new JLabel("");
-        questionLabel.setBounds(140,100,300,40);
+        questionLabel = new JLabel("", SwingConstants.CENTER);
         questionLabel.setFont(new Font("Cambria Math",Font.PLAIN,48));
         
         answerField = new JTextField();
-        answerField.setBounds(45,175,300,65);
         answerField.setEditable(false);
         answerField.setFont(new Font("Arial",Font.PLAIN,32));
         answerField.setHorizontalAlignment(JTextField.CENTER);
         
         submitButton = new JButton("Submit");
-        submitButton.setBounds(355,175,100,65);
 
         submitButton.addActionListener(new SubmitButtonListener());
         
         JPanel calPanel = new JPanel();
-        calPanel.setBounds(0,200,500,500);
         calPanel.setLayout(new GridBagLayout());
         GridBagConstraints gbc = new GridBagConstraints();
         
@@ -255,24 +282,57 @@ public class MathGame extends JFrame {
         // TOP TEXTFIELD
         gbc.gridx = 0;
         gbc.gridy = 0;
-        gbc.gridwidth = 4;
+        gbc.gridwidth = 3;
         gbc.insets = new Insets(10,0,10,0); // Add external padding
         gbc.fill = GridBagConstraints.BOTH;
         calPanel.add(answerField, gbc);
         
-        gamePanel.add(ques);
-        gamePanel.add(questionLabel);
-        gamePanel.add(answerField);
-        gamePanel.add(submitButton);
+        // SUBMIT
+        gbc.gridx = 3;
+        gbc.gridy = 0;
+//        gbc.insets = new Insets(10,0,10,0); // Add external padding
+        gbc.fill = GridBagConstraints.BOTH;
+        calPanel.add(submitButton, gbc);
+             
+        // GAME PANEL 1
+        
+        gamePanel_1.setLayout(new BorderLayout());
+        gamePanel_1.add(gameTimer, BorderLayout.EAST);
+        
+        // GAME PANEL 2
+        ques.setAlignmentX(Component.RIGHT_ALIGNMENT);
+        gamePanel_2.add(ques);
+        
+        questionLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+        gamePanel_2.add(questionLabel);
+
+        gamePanel.add(gamePanel_1);
+        gamePanel.add(gamePanel_2);
+
         gamePanel.add(calPanel);
         
     }
 
     private void startGame(Operation operation, int numQuestions) {
+        mt = new MouseTest();
+        num=30;
         currentQuestion = 0;
         correctAnswers = 0;
         totalQuestions = numQuestions;
         currentOperation = operation;
+        t = new Timer();
+        tt = new TimerTask(){
+            @Override
+            public void run() {
+                gameTimer.setText(Integer.toString(num));
+                num--;
+                if (num<0){
+                    t.cancel();
+                }
+            }
+            
+        };
+        t.schedule(tt, 0, 1000);
 
         setContentPane(gamePanel);
         updateQuestion();
@@ -281,12 +341,12 @@ public class MathGame extends JFrame {
     }
 
     private void updateQuestion() {
-        if (currentQuestion < totalQuestions) {
-            int num1 = random.nextInt(9)+1;
-            int num2 = random.nextInt(9)+1;
+        if (currentQuestion < totalQuestions && num!=-1) {
+            num1 = random.nextInt(9)+1;
+            num2 = random.nextInt(9)+1;
 
-            int expectedAnswer = 0;
-            String operator = null;
+            expectedAnswer = 0;
+            operator = null;
 
             switch (currentOperation) {
                 case ADDITION:
@@ -304,37 +364,52 @@ public class MathGame extends JFrame {
                     break;
                     
                 case RNDM:
-        Operation randomOperation = generateRandomOperation();
-        switch (randomOperation) {
-            case ADDITION:
-                expectedAnswer = num1 + num2;
-                operator = "+";
-                break;
-            case SUBTRACTION:
-                expectedAnswer = num1 - num2;
-                operator = "-";
-                break;
-            case MLTIPLICATION:
-                num2 = (num2 == 0) ? 1 : num2;
-                expectedAnswer = num1 * num2;
-                operator = "*";
-                break;
-                default:
-                    throw new IllegalArgumentException("Invalid operation");
-            }}
-
-            ques.setText("Question " + (currentQuestion + 1) + ":");
-            
-            questionLabel.setText(num1 + " " + operator + " " + num2 + " = ?");
-            questionLabel.putClientProperty("answer", expectedAnswer);
-            
+                    mt.setVisible(true);
+                    mt.addMouseMotionListener(new MouseAdapter(){
+                        @Override
+                        public void mouseClicked(MouseEvent me){
+                            Operation randomOperation = generateRandomOperation();
+                            rnum1 = mt.getEndX() - mt.getStartX();
+                            rnum2 = mt.getEndY() - mt.getStartY();
+                            switch (randomOperation) {
+                            case ADDITION:
+                                expectedAnswer = rnum1 + rnum2;
+                                operator = "+";
+                                break;
+                            case SUBTRACTION:
+                                expectedAnswer = rnum1 - rnum2;
+                                operator = "-";
+                                break;
+                            case MLTIPLICATION:
+                                num2 = (num2 == 0) ? 1 : rnum2;
+                                expectedAnswer = rnum1 * rnum2;
+                                operator = "*";
+                                break;
+                                default:
+                                    throw new IllegalArgumentException("Invalid operation");
+                            }
+                            ques.setText("Question " + (currentQuestion + 1) + ":");
+                            questionLabel.setText(rnum1 + " " + operator + " " + rnum2 + " = ?") ;
+                            questionLabel.putClientProperty("answer", expectedAnswer);
+                            System.out.println(rnum1); // NOT PRINTINGGG
+                        }
+                    });
+           }
+           switch (currentOperation){
+               case ADDITION:
+               case SUBTRACTION:
+               case MLTIPLICATION:
+                   ques.setText("Question " + (currentQuestion + 1) + ":");
+                   questionLabel.setText(num1 + " " + operator + " " + num2 + " = ?") ;
+                   questionLabel.putClientProperty("answer", expectedAnswer);
+           }
         } else {
             showResults();
         }
     }
 
     private void showResults() {
-        JOptionPane.showMessageDialog(this, "All questions anqesered! \nYou got " + correctAnswers +
+        JOptionPane.showMessageDialog(this, "Game Over! \nYou got " + correctAnswers +
                 " out of " + totalQuestions + " questions correct.", "Results", JOptionPane.INFORMATION_MESSAGE);
 
         setContentPane(difficultyPanel);
