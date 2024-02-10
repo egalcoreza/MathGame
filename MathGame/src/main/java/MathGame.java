@@ -1,35 +1,31 @@
-
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Font;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.Insets;
+import javax.swing.*;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import javax.swing.JButton;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JTextField;
+import java.util.Random;
 
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- */
+public class MathGame extends JFrame {
 
-/**
- *
- * @author TheFlash
- */
-public class MathGame implements ActionListener {
+    private JPanel difficultyPanel;
+    private JPanel gamePanel;
+
+    private JLabel ques;
+    private JLabel questionLabel;
+    private JTextField answerField;
+    private JButton submitButton;
+
+    private int currentQuestion;
+    private int correctAnswers;
+    private int totalQuestions;
+
+    private Operation currentOperation;
+
+    private Random random = new Random();
     
     Font buttonFont = new Font("SansSerif", Font.BOLD, 30);
     JButton[] numButtons = new JButton[10];
-    JButton[] funcButtons = new JButton[2];
-
-    JTextField textfield = new JTextField(20);
+    JButton[] funcButtons = new JButton[3];
     
-    // DECLARE BUTTONS
     JButton oneButton = new JButton("1");
     JButton twoButton = new JButton("2");
     JButton threeButton = new JButton("3");
@@ -40,39 +36,94 @@ public class MathGame implements ActionListener {
     JButton eightButton = new JButton("8");
     JButton nineButton = new JButton("9");
     JButton zeroButton = new JButton("0");
+    JButton negativeButton = new JButton("-");
     JButton delButton = new JButton("DEL"); 
     JButton clrButton = new JButton("CLR");
-    
-//    // UNUSED
-//    JButton addition = new JButton("Addition");
-//    JButton subtraction = new JButton("Subtraction");
-    
-    public JPanel createGamePanel(){
-        JPanel mainPanel = new JPanel();
-        
-//        // UNUSED
-//        JPanel topPanel = new JPanel();
-//        JLabel firstNum = new JLabel("1");
-//        JLabel secondNum = new JLabel("2");
-//        JLabel operator = new JLabel("+");
 
-        mainPanel.setLayout(new BorderLayout());
-        
-        mainPanel.add(textfield, BorderLayout.NORTH);
-        mainPanel.add(createCalculator(), BorderLayout.SOUTH);
-        
-        return mainPanel;        
+    public MathGame() {
+        setTitle("Math Game");
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setSize(500, 750);
+        setLocationRelativeTo(null);
+
+        createDifficultyPanel();
+        createGamePanel();
+
+        setContentPane(difficultyPanel);
+
+        setVisible(true);
     }
-    
-    public JPanel createCalculator(){
+
+    private void createDifficultyPanel() {
+        difficultyPanel = new JPanel();
+        difficultyPanel.setLayout(null);
+        
+        JLabel tmath = new JLabel("MATH");
+        tmath.setBounds(116,80,300,85);
+        tmath.setFont(new Font("Impact", Font.BOLD, 103));
+        
+        JLabel subtthegame = new JLabel("THE GAME");
+        subtthegame.setBounds(180,170,300,30);
+        subtthegame.setFont(new Font("Impact", Font.PLAIN, 28));
+        
+        JLabel choose = new JLabel("Difficulty:");
+        choose.setBounds(180,265,300,30);
+        choose.setFont(new Font("Cambria", Font.BOLD, 23));
+
+        JButton easyButton = new JButton("Easy");
+        easyButton.setBounds(187,330,100,50);
+        
+        JButton mediumButton = new JButton("Medium");
+        mediumButton.setBounds(187,410,100,50);
+        
+        JButton hardButton = new JButton("Hard");
+        hardButton.setBounds(187,490,100,50);
+        
+        JButton randomButton = new JButton("Random");
+        randomButton.setBounds(187,570,100,50);
+
+        easyButton.addActionListener(new DifficultyButtonListener(Operation.ADDITION, 10));
+        mediumButton.addActionListener(new DifficultyButtonListener(Operation.SUBTRACTION, 10));
+        hardButton.addActionListener(new DifficultyButtonListener(Operation.MLTIPLICATION, 10));
+        randomButton.addActionListener(new DifficultyButtonListener(Operation.RNDM, 10));
+
+
+        difficultyPanel.add(tmath);
+        difficultyPanel.add(subtthegame);
+        difficultyPanel.add(choose);
+        difficultyPanel.add(easyButton);
+        difficultyPanel.add(mediumButton);
+        difficultyPanel.add(hardButton);
+        difficultyPanel.add(randomButton);
+    }
+
+    private void createGamePanel() {
+        gamePanel = new JPanel();
+        gamePanel.setLayout(null);
+
+        ques = new JLabel("");
+        ques.setBounds(40,40,300,30);
+        ques.setFont(new Font("Impact",Font.PLAIN,23));
+        
+        questionLabel = new JLabel("");
+        questionLabel.setBounds(140,100,300,40);
+        questionLabel.setFont(new Font("Cambria Math",Font.PLAIN,48));
+        
+        answerField = new JTextField();
+        answerField.setBounds(45,175,300,65);
+        answerField.setEditable(false);
+        answerField.setFont(new Font("Arial",Font.PLAIN,32));
+        answerField.setHorizontalAlignment(JTextField.CENTER);
+        
+        submitButton = new JButton("Submit");
+        submitButton.setBounds(355,175,100,65);
+
+        submitButton.addActionListener(new SubmitButtonListener());
+        
         JPanel calPanel = new JPanel();
+        calPanel.setBounds(0,200,500,500);
         calPanel.setLayout(new GridBagLayout());
         GridBagConstraints gbc = new GridBagConstraints();
-        
-        // TEXTFIELD ATTRIBUTES
-        textfield.setFont(buttonFont);
-        textfield.setEditable(false);
-        textfield.setBackground(Color.WHITE);
         
         // ADD NUMBER BUTTONS TO ARRAY
         numButtons[0] = zeroButton;
@@ -89,18 +140,41 @@ public class MathGame implements ActionListener {
         // ADD FUNCTION BUTTONS TO ARRAY
         funcButtons[0] = delButton;
         funcButtons[1] = clrButton;
+        funcButtons[2] = negativeButton;
         
         // SET FONT FOR BUTTONS
         for (JButton myButton : numButtons) {
             myButton.setFont(buttonFont);
             myButton.setFocusable(false);
-            myButton.addActionListener(this);
+            myButton.addActionListener(new ActionListener(){
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    for(int i=0; i<numButtons.length; i++){
+                        if (e.getSource() == numButtons[i]){
+                            answerField.setText(answerField.getText().concat(String.valueOf(i)));
+                        }
+                    }
+                }
+            });
         }
         
         for (JButton func : funcButtons){
             func.setFont(buttonFont);
             func.setFocusable(false);
-            func.addActionListener(this);
+            func.addActionListener(new ActionListener(){
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    if (e.getSource() == clrButton){
+                            answerField.setText("");
+                    }
+                    if (e.getSource() == delButton){ 
+                        answerField.setText(answerField.getText().replaceAll(".$", "")); //Replace last character with "";
+                    }
+                    if (e.getSource() == negativeButton){ 
+                        answerField.setText(answerField.getText().concat("-"));
+                    }
+                }
+            });
         }
         
         // MAKE THE GRIDS FOR THE NUMBERS
@@ -110,6 +184,7 @@ public class MathGame implements ActionListener {
         gbc.gridheight = 1;
         gbc.ipadx = 40;         // Add internal padding
         gbc.ipady = 40;         // Add internal padding
+        gbc.insets = new Insets(3, 3, 3, 3); // Add external padding
         calPanel.add(sevenButton, gbc);
         
         gbc.gridx = 1;
@@ -172,52 +247,157 @@ public class MathGame implements ActionListener {
         gbc.gridheight = 1;
         calPanel.add(zeroButton, gbc);
         
+        gbc.gridx = 0;
+        gbc.gridy = 4;
+        gbc.gridheight = 1;
+        calPanel.add(negativeButton, gbc);
+        
         // TOP TEXTFIELD
         gbc.gridx = 0;
         gbc.gridy = 0;
         gbc.gridwidth = 4;
         gbc.insets = new Insets(10,0,10,0); // Add external padding
         gbc.fill = GridBagConstraints.BOTH;
-        calPanel.add(textfield, gbc);
+        calPanel.add(answerField, gbc);
         
-        return calPanel;
-    }
-    
-    private static void createAndShowGUI(){
-        JFrame frame = new JFrame("Math Game");
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.setLayout(new BorderLayout());
+        gamePanel.add(ques);
+        gamePanel.add(questionLabel);
+        gamePanel.add(answerField);
+        gamePanel.add(submitButton);
+        gamePanel.add(calPanel);
         
-        //Display the panel
-        MathGame mathGame = new MathGame();
-        frame.add(mathGame.createGamePanel(), BorderLayout.CENTER);
-        
-        //Display the window
-        frame.setSize(500, 700);
-        frame.setVisible(true);
-        
-    }
-    
-    public static void main(String[] args) {
-        java.awt.EventQueue.invokeLater(new Runnable() {
-            public void run() {
-                createAndShowGUI();
-            }
-        });
     }
 
-    @Override
-    public void actionPerformed(ActionEvent e) {
-        for(int i=0; i<numButtons.length; i++){
-            if (e.getSource() == numButtons[i]){
-                textfield.setText(textfield.getText().concat(String.valueOf(i)));
+    private void startGame(Operation operation, int numQuestions) {
+        currentQuestion = 0;
+        correctAnswers = 0;
+        totalQuestions = numQuestions;
+        currentOperation = operation;
+
+        setContentPane(gamePanel);
+        updateQuestion();
+        revalidate();
+        repaint();
+    }
+
+    private void updateQuestion() {
+        if (currentQuestion < totalQuestions) {
+            int num1 = random.nextInt(9)+1;
+            int num2 = random.nextInt(9)+1;
+
+            int expectedAnswer = 0;
+            String operator = null;
+
+            switch (currentOperation) {
+                case ADDITION:
+                    expectedAnswer = num1 + num2;
+                    operator = "+";
+                    break;
+                case SUBTRACTION:
+                    expectedAnswer = num1 - num2;
+                    operator = "-";
+                    break;
+                case MLTIPLICATION:
+                    num2 = (num2 == 0) ? 1 : num2;
+                    expectedAnswer = num1 * num2;
+                    operator = "*";
+                    break;
+                    
+                case RNDM:
+        Operation randomOperation = generateRandomOperation();
+        switch (randomOperation) {
+            case ADDITION:
+                expectedAnswer = num1 + num2;
+                operator = "+";
+                break;
+            case SUBTRACTION:
+                expectedAnswer = num1 - num2;
+                operator = "-";
+                break;
+            case MLTIPLICATION:
+                num2 = (num2 == 0) ? 1 : num2;
+                expectedAnswer = num1 * num2;
+                operator = "*";
+                break;
+                default:
+                    throw new IllegalArgumentException("Invalid operation");
+            }}
+
+            ques.setText("Question " + (currentQuestion + 1) + ":");
+            
+            questionLabel.setText(num1 + " " + operator + " " + num2 + " = ?");
+            questionLabel.putClientProperty("answer", expectedAnswer);
+            
+        } else {
+            showResults();
+        }
+    }
+
+    private void showResults() {
+        JOptionPane.showMessageDialog(this, "All questions anqesered! \nYou got " + correctAnswers +
+                " out of " + totalQuestions + " questions correct.", "Results", JOptionPane.INFORMATION_MESSAGE);
+
+        setContentPane(difficultyPanel);
+        revalidate();
+        repaint();
+    }
+
+    private Operation generateRandomOperation() {
+int randomIndex = random.nextInt(Operation.values().length);
+    return Operation.values()[randomIndex];    }
+
+    private class DifficultyButtonListener implements ActionListener {
+        private Operation operation;
+        private int numQuestions;
+
+        public DifficultyButtonListener(Operation operation, int numQuestions) {
+            this.operation = operation;
+            this.numQuestions = numQuestions;
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            startGame(operation, numQuestions);
+        }
+    }
+
+    private class SubmitButtonListener implements ActionListener {
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            if (currentQuestion < totalQuestions) {
+                int userAnswer;
+                try {
+                    userAnswer = Integer.parseInt(answerField.getText());
+                } catch (NumberFormatException ex) {
+                    JOptionPane.showMessageDialog(MathGame.this, 
+                            "Invalid input. Please enter a number.", "Error", 
+                            JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
+
+                int expectedAnswer = (int) questionLabel.getClientProperty("answer");
+
+                if (userAnswer == expectedAnswer) {
+                    correctAnswers++;
+                }
+
+                currentQuestion++;
+                answerField.setText("");
+                updateQuestion();
+            } else {
+                showResults();
             }
         }
-        if (e.getSource() == clrButton){
-                textfield.setText("");
-        }
-        if (e.getSource() == delButton){ 
-            textfield.setText(textfield.getText().replaceAll(".$", "")); //Replace last character with "";
-        }         
+    }
+
+    public static void main(String[] args) {
+        SwingUtilities.invokeLater(MathGame::new);
+    }
+
+    enum Operation {
+        ADDITION,
+        SUBTRACTION,
+        MLTIPLICATION,
+        RNDM
     }
 }
