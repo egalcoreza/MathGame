@@ -305,7 +305,7 @@ public class MathGame extends JFrame {
     }
 
     private void startGame(Operation operation, int numQuestions) {
-        num=30;
+        num=40;
         currentQuestion = 0;
         correctAnswers = 0;
         totalQuestions = numQuestions;
